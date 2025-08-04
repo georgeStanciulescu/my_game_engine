@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/CMakeLists.txt.dir/main.cpp.o -o CMakeLists.txt 

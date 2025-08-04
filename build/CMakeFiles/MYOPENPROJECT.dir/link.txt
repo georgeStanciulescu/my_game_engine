@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/MYOPENPROJECT.dir/main.cpp.o CMakeFiles/MYOPENPROJECT.dir/glad.c.o -o MYOPENPROJECT   -L/home/george/OpenGL/lib  -Wl,-rpath,/home/george/OpenGL/lib -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl 

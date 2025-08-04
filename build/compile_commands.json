@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/george/MYOPENPROJECT/build",
+  "command": "/usr/bin/c++  -I/home/george/OpenGL/include -g -std=gnu++17 -Wall -Wextra -Wconversion -Weffc++ -o CMakeFiles/MYOPENPROJECT.dir/main.cpp.o -c /home/george/MYOPENPROJECT/main.cpp",
+  "file": "/home/george/MYOPENPROJECT/main.cpp",
+  "output": "CMakeFiles/MYOPENPROJECT.dir/main.cpp.o"
+},
+{
+  "directory": "/home/george/MYOPENPROJECT/build",
+  "command": "/usr/bin/cc  -I/home/george/OpenGL/include -g -Wall -Wextra -Wconversion -Weffc++ -o CMakeFiles/MYOPENPROJECT.dir/glad.c.o -c /home/george/MYOPENPROJECT/glad.c",
+  "file": "/home/george/MYOPENPROJECT/glad.c",
+  "output": "CMakeFiles/MYOPENPROJECT.dir/glad.c.o"
+}
+]

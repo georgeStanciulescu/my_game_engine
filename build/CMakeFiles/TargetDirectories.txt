@@ -1,0 +1,3 @@
+/home/george/MYOPENPROJECT/build/CMakeFiles/MYOPENPROJECT.dir
+/home/george/MYOPENPROJECT/build/CMakeFiles/edit_cache.dir
+/home/george/MYOPENPROJECT/build/CMakeFiles/rebuild_cache.dir
