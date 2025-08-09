@@ -85,7 +85,7 @@ public:
     // ------------------------------------------------------------------------
     void setBool(const std::string &name, bool value) const
     {
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+        glUniform1i(glGetUniformLocation(ID, name.c_str()), static_cast<int>(value));
     }
     // ------------------------------------------------------------------------
     void setInt(const std::string &name, int value) const
@@ -98,13 +98,31 @@ public:
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
     }
 
-    // void setMat4(const std::string &name,glm::value_ptr)
+    void setMat4(const std::string &name,const glm::mat4& matrix) const
+    {
+        glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()),1,GL_FALSE, glm::value_ptr(matrix));
+    }
+
+    void setVec3(const std::string &name , float x,float y,float z) const
+    {
+        glUniform3f(glGetUniformLocation(ID,name.c_str()),x,y,z);
+    }
+
+    void setVec3(const std::string &name , const glm::vec3& vec) const
+    {
+        glUniform3f(glGetUniformLocation(ID,name.c_str()),vec.x,vec.y,vec.z);
+    }
+
+    void setMat3(const std::string &name,const glm::mat3& matrix) const
+    {
+        glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()),1,GL_FALSE,glm::value_ptr(matrix));
+    }
 
     void end() const
     {
         glDeleteProgram(ID);
     }
-    unsigned int getProgramID()
+    [[nodiscard]] unsigned int getProgramID() const
     {
         return ID;
     }
@@ -114,9 +132,9 @@ private:
     unsigned int ID;
 
 
-    void checkCompileErrors(unsigned int shader, std::string_view type)
+    static void checkCompileErrors(unsigned int shader, std::string_view type)
     {
-        int success;
+        int success{};
         char infoLog[1024];
         if (type != "PROGRAM")
         {
