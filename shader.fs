@@ -53,7 +53,7 @@ uniform SpotLight spotLight;
 
 vec3 calculateDirLight(DirLight light,vec3 normal,vec3 viewDir);
 vec3 calculatePointLight(PointLight light,vec3 normal,vec3 viewDir,vec3 FragPos);
-vec3 calculateSpotLight(SpotLight light,vec3 normal,vec3 FragPos);
+vec3 calculateSpotLight(SpotLight light,vec3 normal,vec3 viewDirection,vec3 FragPos);
 
 out vec4 FragColor;
 //in vec3 ourColor;
@@ -65,6 +65,8 @@ uniform vec3 objectColor;
 uniform vec3 viewPos;
 uniform bool hasFlashed;
 
+float near = 0.1;
+float far  = 100.0;
 
 void main()
 {
@@ -85,11 +87,12 @@ else
     resultingLight += calculateDirLight(dirLight,objectNormal,viewDirection);
     for(int i = 0; i <= NR_POINT_LIGHTS;++i)
             resultingLight += calculatePointLight(pointLights[i],objectNormal,viewDirection,FragPos);
-    resultingLight += calculateSpotLight(spotLight,objectNormal,FragPos);
+    resultingLight += calculateSpotLight(spotLight,objectNormal,viewDirection,FragPos);
 }
 
 FragColor = vec4(resultingLight ,1.0);
 //FragColor = texture(material.texture_diffuse1,TexCoord);
+
 }
 
 vec3 calculateDirLight(DirLight light,vec3 normal,vec3 viewDir)
@@ -124,7 +127,7 @@ vec3 calculatePointLight(PointLight light,vec3 normal,vec3 viewDir,vec3 FragPos)
     return (ambient + diffuse + specular);
 }
 
-vec3 calculateSpotLight(SpotLight light,vec3 normal,vec3 FragPos)
+vec3 calculateSpotLight(SpotLight light,vec3 normal,vec3 viewDirection,vec3 FragPos)
 {
     vec3 lightDirection = normalize(light.position - FragPos);
     vec3 reflectionDirection = reflect(-lightDirection,normal);
@@ -137,12 +140,12 @@ vec3 calculateSpotLight(SpotLight light,vec3 normal,vec3 FragPos)
     float intensity = clamp((theta - light.outerCutOff) / epsilon,0.0,1.0);
 
     float diffuseStrength = max(dot(normal,lightDirection),0.0f);
-    float specularStrength = pow(max(dot(light.position,reflectionDirection),0.0f),material.shininess);
+    float specularStrength = pow(max(dot(viewDirection,reflectionDirection),0.0f),material.shininess);
 
     vec3 ambient = light.ambient * vec3(texture(material.texture_diffuse1,TexCoord)) * attenuation * intensity;
     vec3 diffuse = light.diffuse * vec3(texture(material.texture_diffuse1,TexCoord)) * diffuseStrength * attenuation * intensity;
     // for some reason any specularity makes the object very bright
-    vec3 specular = light.specular * vec3(texture(material.texture_specular1,TexCoord)) * specularStrength * attenuation * intensity *0.0f;
+    vec3 specular = light.specular * vec3(texture(material.texture_specular1,TexCoord)) * specularStrength * attenuation * intensity ;
 
     return (ambient + diffuse + specular);
 }

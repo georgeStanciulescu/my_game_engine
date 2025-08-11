@@ -21,11 +21,18 @@
 #include <map>
 #include <vector>
 
-unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false);
+enum class TextureType
+{
+    transparent,
+    opaque,
+};
+
+unsigned int TextureFromFile(const char *path, const std::string &directory ="",TextureType imageType = TextureType::opaque, bool gamma = false);
 
 class Model
 {
 public:
+
     std::vector<Mesh::Texture> textures_loaded;
     std::vector<Mesh> meshes;
     std::string directory;
@@ -181,11 +188,13 @@ private:
         }
         return textures;
     }
+public:
 
-    static unsigned int TextureFromFile(const char *path,const std::string &directory = "", [[maybe_unused]] bool gamma = false)
+    static unsigned int TextureFromFile(const char *path,const std::string &directory = "", TextureType imageType = TextureType::opaque,[[maybe_unused]] bool gamma = false)
     {
 
         std::string filename = std::string(path);
+
 
         if (!directory.empty())
         {
@@ -215,12 +224,25 @@ private:
         else if (nrComponents == 4)
             format = GL_RGBA;
 
+
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexImage2D(GL_TEXTURE_2D, 0, static_cast<int>(format), width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        std::cout << "TEXTURE: " << path << "     TYPE: ";
+        if (imageType == TextureType::opaque)
+        {
+            std::cout << "OPAQUE" << '\n';
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        }
+        else if (imageType == TextureType::transparent)
+        {
+            std::cout << "TRANSPARENT" << '\n';
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

@@ -37,8 +37,7 @@ namespace Globals
 }
 
 
-int main()
-{
+int main() {
     glfwInit(); //the opengl version being used and initialising the state
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -59,12 +58,12 @@ int main()
         return -1;
 
     }
-    glViewport(0, 0, Globals::SCREEN_WIDTH, Globals::SCREEN_HEIGHT); // where rendering happens,the x and the y are 0,so the starting point is the left bottom corner
 
+    glViewport(0, 0, Globals::SCREEN_WIDTH, Globals::SCREEN_HEIGHT); // where rendering happens,the x and the y are 0,so the starting point is the left bottom corner
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // the function uses the window to resize it as appropriate
 
     float vertices[] = {// vertices for the cubes;
-            //vertices         texture        normals
+        //vertices         texture        normals
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,0.0f,-1.0f,
          0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,0.0f,-1.0f,
          0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,0.0f,-1.0f,
@@ -108,32 +107,204 @@ int main()
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,1.0f, 0.0f
     };
 
+    // float cubeVertices[] = {
+    //     // Back face
+    //     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
+    //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+    //      0.5f, -0.5f, -0.5f,  1.0f, 0.0f, // bottom-right
+    //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+    //     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // bottom-left
+    //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
+    //     // Front face
+    //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
+    //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
+    //      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right
+    //      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right
+    //     -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, // top-left
+    //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
+    //     // Left face
+    //     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right
+    //     -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-left
+    //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left
+    //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left
+    //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right
+    //     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right
+    //     // Right face
+    //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left
+    //      0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right
+    //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+    //      0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right
+    //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left
+    //      0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
+    //     // Bottom face
+    //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right
+    //      0.5f, -0.5f, -0.5f,  1.0f, 1.0f, // top-left
+    //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left
+    //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left
+    //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right
+    //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right
+    //     // Top face
+    //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
+    //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
+    //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+    //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
+    //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
+    //     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f  // bottom-left
+    // };
+
+    float cubeVertices[] =
+    {
+        0.5f,0.5f,-0.5f,   0.0f,1.0f,
+        -0.5f,-0.5f,-0.5f,  1.0f, 1.0f,
+        0.5f,-0.5f,-0.5f,    1.0f, 0.0f,
+        0.5f,0.5f,-0.5f,    1.0f, 1.0f,
+        -0.5f,0.5f,-0.5f,0.0f, 0.0f,
+        -0.5f,-0.5f,-0.5f,0.0f, 1.0f,
+
+        -0.5f,0.5f,0.5f,0.0f, 1.0f,
+        0.5f,-0.5f,0.5f,1.0f, 0.0f,
+        -0.5f,-0.5f,0.5f,1.0f, 1.0f,
+        -0.5f,0.5f,0.5f,1.0f, 1.0f,
+        0.5f,0.5f,0.5f,0.0f, 1.0f,
+        0.5f,-0.5f,0.5f,0.0f, 0.0f,
+
+        -0.5f,0.5f,0.5f,1.0f, 0.0f,
+        -0.5f,-0.5f,-0.5f,1.0f, 1.0f,
+        -0.5f,0.5f,-0.5f,0.0f, 1.0f,
+        -0.5f,0.5f,0.5f,0.0f, 1.0f,
+        -0.5f,-0.5f,0.5f, 0.0f, 0.0f,
+        -0.5f,-0.5f,-0.5f, 1.0f, 0.0f,
+
+        0.5f,-0.5f,0.5f, 1.0f, 0.0f,
+        0.5f,0.5f,-0.5f,0.0f, 1.0f,
+        0.5f,-0.5f,-0.5f,1.0f, 1.0f,
+        0.5f,-0.5f,0.5f, 0.0f, 1.0f,
+        0.5f,0.5f,0.5f,1.0f, 0.0f,
+        0.5f,0.5f,-0.5f,0.0f, 0.0f,
+
+        0.5f,-0.5f,-0.5f,0.0f, 1.0f,
+        -0.5f,-0.5f,0.5f,1.0f, 1.0f,
+        0.5f,-0.5f,0.5f,1.0f, 0.0f,
+        0.5f,-0.5f,-0.5f,1.0f, 0.0f,
+        -0.5f,-0.5f,-0.5f,0.0f, 0.0f,
+        -0.5f,-0.5f,0.5f,0.0f, 1.0f,
+
+        -0.5f,0.5f,-0.5f,0.0f, 1.0f,
+        0.5f,0.5f,0.5f,1.0f, 0.0f,
+        -0.5f,0.5f,0.5f,1.0f, 1.0f,
+        -0.5f,0.5f,-0.5f,1.0f, 0.0f,
+        0.5f,0.5f,-0.5f,0.0f, 1.0f,
+        0.5f,0.5f,0.5f,0.0f, 0.0f
+
+    };
+    float planeVertices[] = {
+        // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+        5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+       -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
+       -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+
+        5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+       -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+        5.0f, -0.5f, -5.0f,  2.0f, 2.0f
+   };
+
+    float vegetationPosition[] = {
+        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+     0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+     1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+     0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+     1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+     1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+    };
+
+    std::vector<glm::vec3> vegetation;
+    vegetation.emplace_back(-1.5f,  0.0f, -0.48f);
+    vegetation.emplace_back( 1.5f,  0.0f,  0.51f);
+    vegetation.emplace_back( 0.0f,  0.0f,  0.7f);
+    vegetation.emplace_back(-0.3f,  0.0f, -2.3f);
+    vegetation.emplace_back( 0.5f,  0.0f, -0.6f);
+
+
     stbi_set_flip_vertically_on_load(true);
 
     Camera myCamera(glm::vec3(0.0f,0.0f,3.0f));
     Model myModel("backpack.obj"); // loading model
+
+    stbi_set_flip_vertically_on_load(false); // keep it like this so the grass texture comes up in the right way
+    uint grassTexture(Model::TextureFromFile("transparent_window.png","",TextureType::transparent));
+    unsigned int floorTexture{Model::TextureFromFile("container2.png")};
+    uint containerTexture{Model::TextureFromFile("container2.png")};
+
     Shader myShader("shader.vs","shader.fs");
     Shader lightShader("lightingshader.vs","lightingshader.fs");
+    Shader stencilShader("shader.vs","stencilshader.fs");
+
+
 
     unsigned int lightVBO;
     glGenBuffers(1, &lightVBO); //initializing the buffer object and giving it an id(VBO)
     glBindBuffer(GL_ARRAY_BUFFER, lightVBO); //making the created buffer be associated to a target,the gl_array_buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // passing the data about the vertices we'd like to display with the way in which they should appear(static_draw)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW); // passing the data about the vertices we'd like to display with the way in which they should appear(static_draw)
 
     unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
     glBindVertexArray(lightVAO);
     glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    unsigned int planeVBO,planeVAO;
+    glGenVertexArrays(1,&planeVAO);
+    glGenBuffers(1,&planeVBO);
+    glBindVertexArray(planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER,planeVBO);
+    glBufferData(GL_ARRAY_BUFFER,sizeof(planeVertices),planeVertices,GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
 
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+
+    unsigned int grassVBO,grassVAO;
+    glGenVertexArrays(1,&grassVAO);
+    glGenBuffers(1,&grassVBO);
+    glBindVertexArray(grassVAO);
+    glBindBuffer(GL_ARRAY_BUFFER,grassVBO);
+    glBufferData(GL_ARRAY_BUFFER,sizeof(vegetationPosition),vegetationPosition,GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+    stencilShader.setInt("grass",0);
+    lightShader.setInt("lightTexture",0);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDepthRange(0,1);
+
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetWindowUserPointer(window, &myCamera);
     glfwSetCursorPosCallback(window, mouse_callback);
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    //glEnable(GL_CULL_FACE);
+
+    auto zeroFrame = static_cast<float>(glfwGetTime());
+    float nFrames{0.0f};
 
     float deltaTime{0.0f};
     float lastFrame{0.0f};
@@ -143,14 +314,22 @@ int main()
         auto currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+        nFrames++;
 
+
+        if (currentFrame - zeroFrame > 0.2f)
+        {
+            std::cout << "FPS: " << nFrames * 5.0f << '\n';
+            nFrames = 0.0f;
+            zeroFrame += 0.2f;
+        }
         processInput(window);
         movementInput(window,myCamera,deltaTime);
 
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         myShader.use();
         myShader.setVec3("viewPos",myCamera.Position);
@@ -159,7 +338,7 @@ int main()
 
         for (unsigned int i{0}; i < movingLight.size();++i)
         {
-            movingLight[i] = glm::vec3(1.0f,1.0f,1.0f) * glm::vec3(std::sin(glfwGetTime()) * 1.0f ,static_cast<float>(i) * 1.0f,std::cos(glfwGetTime()) * 3.0f );
+            movingLight[i] = glm::vec3(std::sin(glfwGetTime()) * 1.0f * i ,static_cast<float>(i) * 1.0f,std::cos(glfwGetTime()) * 3.0f * i);
             std::string index{std::to_string(i)};
             myShader.setVec3("pointLights[" + index + "].position",movingLight[i]);
             myShader.setFloat("pointLights["+ index +"].constant",1.0f);
@@ -197,21 +376,41 @@ int main()
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));	// it's a bit too big for our scene, so scale it down
 
         myShader.setMat4("transform",model);
 
+
+        //glFrontFace(GL_CW);
+        // auto t = static_cast<float>(glfwGetTime());
+        // for (int i{0};i < 30;++i)
+        // {
+        //
+        //     model = glm::translate(model, glm::vec3(0.0f, i/2, 0.0f)); // translate it down so it's at the center of the scene
+        //     model = glm::rotate(model, glm::radians(static_cast<float>(glfwGetTime()) * 2.0f),glm::vec3(t,t,t));
+        //
+        //     myShader.setMat4("transform",model);
+        //     myModel.Draw(myShader);
+        // }
+        glDisable(GL_CULL_FACE);
         myModel.Draw(myShader);
 
+        glBindVertexArray(planeVAO);
+        //glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D,floorTexture);
+        model = glm::mat4(1.0f);
+        //model = glm::translate(model,glm::vec3(0.0f,0.0f,0.0f));
+        myShader.setMat4("transform",model);
+        glDrawArrays(GL_TRIANGLES,0,6);
+
         lightShader.use();
-        for (glm::vec3& light : movingLight)
-        {
-            lightShader.setMat4("projection",projection);
-            lightShader.setMat4("view",view);
+        lightShader.setMat4("projection",projection);
+        lightShader.setMat4("view",view);
+        for (glm::vec3& light : movingLight) {
 
             glm::mat4 lightModel = glm::mat4(1.0f);
-            lightModel = glm::translate(lightModel,light);
-            lightModel = glm::scale(lightModel,glm::vec3(0.3f));
+            lightModel = glm::translate(lightModel,glm::vec3(light.x,0.0f,light.z));
+            lightModel = glm::scale(lightModel,glm::vec3(0.4f));
 
             lightShader.setMat4("transform",lightModel);
 
@@ -219,11 +418,55 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+        //glFrontFace(GL_CW);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        model = glm::translate(model,glm::vec3(0.0f,5.0f,0.0f));
+        model = glm::scale(model,glm::vec3(2.0f,2.0f,2.0f));
+        lightShader.setMat4("transform",model);
+
+        glBindVertexArray(lightVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D,containerTexture);
+        glDrawArrays(GL_TRIANGLES,0,36);
+
+        glDisable(GL_CULL_FACE);
+
+
+        stencilShader.use();
+        glBindVertexArray(grassVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D,grassTexture);
+
+        stencilShader.setMat4("projection",projection);
+        stencilShader.setMat4("view",view);
+
+
+        std::map<float,glm::vec3> sortedWindows;
+
+        for (glm::vec3& pos : vegetation) {
+            float distance = glm::length(myCamera.Position - pos);
+            sortedWindows[distance] = pos;
+        }
+
+        for(auto it = sortedWindows.rbegin(); it != sortedWindows.rend(); ++it)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, it->second);
+            stencilShader.setMat4("transform", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+
+
+
         glfwSwapBuffers(window); // double buffers(front and back) used simultaneously to make whatever is on screen appear smooth
         glfwPollEvents(); // this calls the callback functions,takes input,updates the window;
     }
-
+    glDeleteVertexArrays(1,&planeVAO);
     glDeleteVertexArrays(1,&lightVAO);
+
+    glDeleteBuffers(1,&lightVBO);
+    glDeleteBuffers(1,&planeVBO);
     myShader.end();
     lightShader.end();
 
