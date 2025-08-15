@@ -4,7 +4,23 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTex;
 layout(location = 3) in vec3 aTangent;
-layout(location = 3) in vec3 aBitangent;
+layout(location = 4) in vec3 aBitangent;
+
+
+
+layout (std140) uniform Perspective
+{
+    mat4 projection;
+    mat4 view;
+
+};
+
+out TEX_COORDS
+{
+    vec2 TexCoord;
+    vec3 ABNORMAL;
+    vec3 FragPos;
+}tex_coords;
 
 //out vec3 ourColor;
 out vec2 TexCoord;
@@ -13,8 +29,6 @@ out vec3 FragPos;
 
 
 uniform mat4 transform;
-uniform mat4 view;
-uniform mat4 projection;
 uniform mat3 inverseTransposeMatrix;
 
 
@@ -22,15 +36,18 @@ uniform mat3 inverseTransposeMatrix;
 
 void main()
 {
-gl_Position = projection* view * transform * vec4(aPos.x ,aPos.y,aPos.z, 1.0) ; // see how we directly give a vec3 to vec4's constructor
+gl_Position = projection* view * transform * vec4(aPos, 1.0) ; // see how we directly give a vec3 to vec4's constructor
 
-FragPos = vec3(transform*vec4(aPos,1.0f));
+
+//FragPos = vec3(transform*vec4(aPos,1.0f));
 
 //ourColor = aColor; // set the output variable to a dark-red color
 
-TexCoord = aTex; // texture
+tex_coords.TexCoord = aTex; // texture
 //Normal = inverseTransposeMatrix * aNormal;
-Normal =aNormal;
+//Normal =aNormal;
+tex_coords.ABNORMAL = aNormal;
+tex_coords.FragPos = vec3(transform*vec4(aPos,1.0f));
 
 
 }

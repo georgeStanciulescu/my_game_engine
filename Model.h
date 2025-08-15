@@ -43,11 +43,11 @@ public:
         loadModel(path);
     }
 
-    void Draw(const Shader& shader) const
+    void Draw(const Shader& shader,const int numberOfInstances = 0) const
     {
         for (const Mesh& i : meshes)
         {
-            i.Draw(shader);
+            i.Draw(shader,numberOfInstances);
         }
     }
 private:
@@ -190,16 +190,12 @@ private:
     }
 public:
 
-    static unsigned int TextureFromFile(const char *path,const std::string &directory = "", TextureType imageType = TextureType::opaque,[[maybe_unused]] bool gamma = false)
+    static unsigned int TextureFromFile(const char *path,const std::string &directory = "",
+        const TextureType imageType = TextureType::opaque,[[maybe_unused]] bool gamma = false)
     {
+        auto filename = std::string(path);
 
-        std::string filename = std::string(path);
-
-
-        if (!directory.empty())
-        {
-            filename = directory + '/' + filename;
-        }
+        if (!directory.empty()){filename = directory + '/' + filename;}
 
         unsigned int textureID{};
         glGenTextures(1, &textureID);
@@ -215,7 +211,6 @@ public:
             stbi_image_free(data);
             return textureID;
         }
-
         GLenum format{0};
         if (nrComponents == 1)
             format = GL_RED;
@@ -223,7 +218,6 @@ public:
             format = GL_RGB;
         else if (nrComponents == 4)
             format = GL_RGBA;
-
 
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexImage2D(GL_TEXTURE_2D, 0, static_cast<int>(format), width, height, 0, format, GL_UNSIGNED_BYTE, data);
@@ -247,6 +241,37 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         stbi_image_free(data);
+
+        return textureID;
+    }
+
+    static unsigned int loadCubemap(const std::vector<std::string>& faces) // not part of the class proper,have to move it eventually;
+    {
+        unsigned int textureID;
+        glGenTextures(1, &textureID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+        int width, height, nrChannels;
+        for (unsigned int i = 0; i < faces.size(); i++)
+        {
+            unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+            if (!data)
+            {
+
+                std::cout << "Texture upload problem for " << faces[i] << std::endl;
+                stbi_image_free(data);
+                return 0;
+            }
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                             0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+                );
+            stbi_image_free(data);
+        }
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         return textureID;
     }

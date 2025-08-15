@@ -9,6 +9,13 @@
 #include "stb_image.h"
 #include "Camera.h"
 #include "Model.h"
+#include "Globals.h"
+#include "Framebuffer.h"
+#include "UBO.h"
+#include "VertexInformation.h"
+#include "ArrayBuffer.h"
+#include "Input.h"
+
 
 #include <iostream>
 #include <cmath>
@@ -18,32 +25,16 @@
 static void framebuffer_size_callback(GLFWwindow* window,int width, int height);
 static void mouse_callback(GLFWwindow* window,double xpos, double ypos);
 
-static void processInput(GLFWwindow *window);
-static void movementInput(GLFWwindow *window,Camera& myCamera,float deltaTime);
-
-namespace Globals
-{
-    static constexpr unsigned int SCREEN_WIDTH{800};
-    static constexpr unsigned int SCREEN_HEIGHT{600};
-    static float FOV{60.0f};
-    static bool firstLook{true};
-
-
-    static float lastX{static_cast<float>(SCREEN_WIDTH) / 2.0f};
-    static float lastY{static_cast<float>(SCREEN_HEIGHT) / 2.0f};
-    static bool hasFlashed{false};
-    static bool closeFlash{false};
-
-}
-
+void printFPS(double& zeroFrame,int& nFrames);
 
 int main() {
     glfwInit(); //the opengl version being used and initialising the state
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
-    GLFWwindow* window = glfwCreateWindow(Globals::SCREEN_WIDTH, Globals::SCREEN_HEIGHT, "LearnOpenGL", nullptr, nullptr); // creating the pointer window with the necessary attributes
+    GLFWwindow* window = glfwCreateWindow(Globals::SCREEN_WIDTH, Globals::SCREEN_HEIGHT, "Daemon Engine", nullptr, nullptr); // creating the pointer window with the necessary attributes
     if (!window) // if the pointer is null,end the process;
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -62,170 +53,6 @@ int main() {
     glViewport(0, 0, Globals::SCREEN_WIDTH, Globals::SCREEN_HEIGHT); // where rendering happens,the x and the y are 0,so the starting point is the left bottom corner
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // the function uses the window to resize it as appropriate
 
-    float vertices[] = {// vertices for the cubes;
-        //vertices         texture        normals
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,0.0f,-1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,0.0f,-1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,0.0f,-1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,0.0f,-1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,0.0f,-1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,0.0f,-1.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,0.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,0.0f, 1.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f,0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,0.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f,0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,0.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,0.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,-1.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,-1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,-1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,-1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,-1.0f, 0.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,1.0f, 0.0f
-    };
-
-    // float cubeVertices[] = {
-    //     // Back face
-    //     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
-    //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
-    //      0.5f, -0.5f, -0.5f,  1.0f, 0.0f, // bottom-right
-    //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
-    //     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // bottom-left
-    //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
-    //     // Front face
-    //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
-    //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
-    //      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right
-    //      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right
-    //     -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, // top-left
-    //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
-    //     // Left face
-    //     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right
-    //     -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-left
-    //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left
-    //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left
-    //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right
-    //     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right
-    //     // Right face
-    //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left
-    //      0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right
-    //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
-    //      0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right
-    //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left
-    //      0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
-    //     // Bottom face
-    //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right
-    //      0.5f, -0.5f, -0.5f,  1.0f, 1.0f, // top-left
-    //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left
-    //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left
-    //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right
-    //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right
-    //     // Top face
-    //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
-    //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
-    //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
-    //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
-    //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
-    //     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f  // bottom-left
-    // };
-
-    float cubeVertices[] =
-    {
-        0.5f,0.5f,-0.5f,   0.0f,1.0f,
-        -0.5f,-0.5f,-0.5f,  1.0f, 1.0f,
-        0.5f,-0.5f,-0.5f,    1.0f, 0.0f,
-        0.5f,0.5f,-0.5f,    1.0f, 1.0f,
-        -0.5f,0.5f,-0.5f,0.0f, 0.0f,
-        -0.5f,-0.5f,-0.5f,0.0f, 1.0f,
-
-        -0.5f,0.5f,0.5f,0.0f, 1.0f,
-        0.5f,-0.5f,0.5f,1.0f, 0.0f,
-        -0.5f,-0.5f,0.5f,1.0f, 1.0f,
-        -0.5f,0.5f,0.5f,1.0f, 1.0f,
-        0.5f,0.5f,0.5f,0.0f, 1.0f,
-        0.5f,-0.5f,0.5f,0.0f, 0.0f,
-
-        -0.5f,0.5f,0.5f,1.0f, 0.0f,
-        -0.5f,-0.5f,-0.5f,1.0f, 1.0f,
-        -0.5f,0.5f,-0.5f,0.0f, 1.0f,
-        -0.5f,0.5f,0.5f,0.0f, 1.0f,
-        -0.5f,-0.5f,0.5f, 0.0f, 0.0f,
-        -0.5f,-0.5f,-0.5f, 1.0f, 0.0f,
-
-        0.5f,-0.5f,0.5f, 1.0f, 0.0f,
-        0.5f,0.5f,-0.5f,0.0f, 1.0f,
-        0.5f,-0.5f,-0.5f,1.0f, 1.0f,
-        0.5f,-0.5f,0.5f, 0.0f, 1.0f,
-        0.5f,0.5f,0.5f,1.0f, 0.0f,
-        0.5f,0.5f,-0.5f,0.0f, 0.0f,
-
-        0.5f,-0.5f,-0.5f,0.0f, 1.0f,
-        -0.5f,-0.5f,0.5f,1.0f, 1.0f,
-        0.5f,-0.5f,0.5f,1.0f, 0.0f,
-        0.5f,-0.5f,-0.5f,1.0f, 0.0f,
-        -0.5f,-0.5f,-0.5f,0.0f, 0.0f,
-        -0.5f,-0.5f,0.5f,0.0f, 1.0f,
-
-        -0.5f,0.5f,-0.5f,0.0f, 1.0f,
-        0.5f,0.5f,0.5f,1.0f, 0.0f,
-        -0.5f,0.5f,0.5f,1.0f, 1.0f,
-        -0.5f,0.5f,-0.5f,1.0f, 0.0f,
-        0.5f,0.5f,-0.5f,0.0f, 1.0f,
-        0.5f,0.5f,0.5f,0.0f, 0.0f
-
-    };
-    float planeVertices[] = {
-        // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-        5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-       -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
-       -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-
-        5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-       -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-        5.0f, -0.5f, -5.0f,  2.0f, 2.0f
-   };
-
-    float vegetationPosition[] = {
-        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-     0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
-     1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-
-     0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-     1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-     1.0f,  0.5f,  0.0f,  1.0f,  0.0f
-    };
-
-    std::vector<glm::vec3> vegetation;
-    vegetation.emplace_back(-1.5f,  0.0f, -0.48f);
-    vegetation.emplace_back( 1.5f,  0.0f,  0.51f);
-    vegetation.emplace_back( 0.0f,  0.0f,  0.7f);
-    vegetation.emplace_back(-0.3f,  0.0f, -2.3f);
-    vegetation.emplace_back( 0.5f,  0.0f, -0.6f);
-
-
     stbi_set_flip_vertically_on_load(true);
 
     Camera myCamera(glm::vec3(0.0f,0.0f,3.0f));
@@ -233,78 +60,73 @@ int main() {
 
     stbi_set_flip_vertically_on_load(false); // keep it like this so the grass texture comes up in the right way
     uint grassTexture(Model::TextureFromFile("transparent_window.png","",TextureType::transparent));
-    unsigned int floorTexture{Model::TextureFromFile("container2.png")};
-    uint containerTexture{Model::TextureFromFile("container2.png")};
+    uint floorTexture{Model::TextureFromFile("container2.png")};
+    uint cubemapTexture = Model::loadCubemap(TemporaryVertices::faces);
 
-    Shader myShader("shader.vs","shader.fs");
+    Shader myShader("shader.vs","shader.gs","shader.fs");
     Shader lightShader("lightingshader.vs","lightingshader.fs");
     Shader stencilShader("shader.vs","stencilshader.fs");
+    Shader frameBufferShader("frameBufferShader.vs","frameBufferShader.fs");
+    Shader skyboxShader("skyboxshader.vs","skyboxshader.fs");
+    Shader normalShader("NORMALSONLYSHADER.vs","NORMALSONLYSHADER.gs","NORMALSONLYSHADER.fs");
 
+    UBO ubo(2*sizeof(glm::mat4),0,GL_STATIC_DRAW);
+    //uint uniformBuffer = ubo.getBufferID();
 
+    Framebuffer myFrameBuffer{Globals::SCREEN_WIDTH,Globals::SCREEN_HEIGHT};
+    uint framebuffer = myFrameBuffer.getFrameBufferID();
+    uint textureFramebuffer = myFrameBuffer.getTextureBufferID();
+    //uint renderObject = myFrameBuffer.getRenderBufferID();
 
-    unsigned int lightVBO;
-    glGenBuffers(1, &lightVBO); //initializing the buffer object and giving it an id(VBO)
-    glBindBuffer(GL_ARRAY_BUFFER, lightVBO); //making the created buffer be associated to a target,the gl_array_buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW); // passing the data about the vertices we'd like to display with the way in which they should appear(static_draw)
+    Framebuffer msBuffer{Globals::SCREEN_WIDTH,Globals::SCREEN_HEIGHT,Framebuffer::Type::MULTISAMPLE};
+    uint sampleFrameBuffer = msBuffer.getFrameBufferID();
+    //uint sampleTexture = msBuffer.getTextureBufferID();
+    //uint sampleRenderBuffer = msBuffer.getRenderBufferID();
 
-    unsigned int lightVAO;
-    glGenVertexArrays(1, &lightVAO);
-    glBindVertexArray(lightVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+    ArrayBuffer lightBuffer(sizeof(TemporaryVertices::cubeVertices),TemporaryVertices::cubeVertices);
+    lightBuffer.setupAttribute(0,3,GL_FLOAT,6*sizeof(float),0);
+    lightBuffer.setupAttribute(1,3,GL_FLOAT,6*sizeof(float),3*sizeof(float));
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
+    ArrayBuffer planeBuffer(sizeof(TemporaryVertices::planeVertices),TemporaryVertices::planeVertices);
+    planeBuffer.setupAttribute(0,3,GL_FLOAT,5*sizeof(float),0);
+    planeBuffer.setupAttribute(2,2,GL_FLOAT,5*sizeof(float),3*sizeof(float));
 
-    unsigned int planeVBO,planeVAO;
-    glGenVertexArrays(1,&planeVAO);
-    glGenBuffers(1,&planeVBO);
-    glBindVertexArray(planeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER,planeVBO);
-    glBufferData(GL_ARRAY_BUFFER,sizeof(planeVertices),planeVertices,GL_STATIC_DRAW);
+    ArrayBuffer grassBuffer(sizeof(TemporaryVertices::vegetationPosition),TemporaryVertices::vegetationPosition);
+    grassBuffer.setupAttribute(0,3,GL_FLOAT,5*sizeof(float),0);
+    grassBuffer.setupAttribute(2,2,GL_FLOAT,5*sizeof(float),3*sizeof(float));
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
+    ArrayBuffer quadBuffer(sizeof(TemporaryVertices::quadVertices),TemporaryVertices::quadVertices);
+    quadBuffer.setupAttribute(0,2,GL_FLOAT,4*sizeof(float),0);
+    quadBuffer.setupAttribute(1,2,GL_FLOAT,4*sizeof(float),2*sizeof(float));
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-
-    unsigned int grassVBO,grassVAO;
-    glGenVertexArrays(1,&grassVAO);
-    glGenBuffers(1,&grassVBO);
-    glBindVertexArray(grassVAO);
-    glBindBuffer(GL_ARRAY_BUFFER,grassVBO);
-    glBufferData(GL_ARRAY_BUFFER,sizeof(vegetationPosition),vegetationPosition,GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(2);
+    ArrayBuffer cubeMapBuffer(sizeof(TemporaryVertices::skyboxVertices),TemporaryVertices::skyboxVertices);
+    cubeMapBuffer.setupAttribute(0,3,GL_FLOAT,3*sizeof(float),0);
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    // glEnableVertexAttribArray(0);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
     stencilShader.setInt("grass",0);
     lightShader.setInt("lightTexture",0);
+    frameBufferShader.setInt("screenTexture",0);
+    skyboxShader.setInt("skybox",0);
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    glEnable(GL_MULTISAMPLE);
+    glDepthFunc(GL_LEQUAL);
     glDepthRange(0,1);
 
+    ubo.uniformBlockBinding(myShader.getProgramID(),"Perspective");
+    ubo.uniformBlockBinding(lightShader.getProgramID(),"Perspective");
+    ubo.uniformBlockBinding(skyboxShader.getProgramID(),"Perspective");
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetWindowUserPointer(window, &myCamera);
     glfwSetCursorPosCallback(window, mouse_callback);
-    glEnable(GL_STENCIL_TEST);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    //glEnable(GL_CULL_FACE);
 
-    auto zeroFrame = static_cast<float>(glfwGetTime());
-    float nFrames{0.0f};
+    auto zeroFrame = glfwGetTime();
+    int nFrames{0};
 
     float deltaTime{0.0f};
     float lastFrame{0.0f};
@@ -316,24 +138,21 @@ int main() {
         lastFrame = currentFrame;
         nFrames++;
 
+        printFPS(zeroFrame,nFrames);
 
-        if (currentFrame - zeroFrame > 0.2f)
-        {
-            std::cout << "FPS: " << nFrames * 5.0f << '\n';
-            nFrames = 0.0f;
-            zeroFrame += 0.2f;
-        }
-        processInput(window);
-        movementInput(window,myCamera,deltaTime);
+        Input::generalInput(window);
+        Input::movementInput(window,myCamera,deltaTime);
 
+        glBindFramebuffer(GL_FRAMEBUFFER,sampleFrameBuffer);
+        glEnable(GL_DEPTH_TEST);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         myShader.use();
         myShader.setVec3("viewPos",myCamera.Position);
-        myShader.setFloat("material.shininess",32.0f);
+        myShader.setFloat("material.shininess",100.0f);
+
         std::vector<glm::vec3> movingLight(8);
 
         for (unsigned int i{0}; i < movingLight.size();++i)
@@ -348,8 +167,10 @@ int main() {
             myShader.setVec3("pointLights["+ index +"].diffuse",  0.15f,0.15f,0.15f); // darken diffuse light a bit
             myShader.setVec3("pointLights["+ index +"].specular", 1.0f, 1.0f, 1.0f);
         }
-
         myShader.setBool("hasFlashed",Globals::hasFlashed); // spotlight turning off and on
+        myShader.setBool("blinnPhong",Globals::blinnPhong);
+
+        myShader.setFloat("time",currentFrame);
         // spotlight details
         myShader.setFloat("spotLight.constant",1.0f);
         myShader.setFloat("spotLight.linear",0.09f);
@@ -363,92 +184,79 @@ int main() {
         myShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
         //direction light details
         myShader.setVec3("dirLight.direction",-1.0f,-1.0f,-1.0f); // direction light
-        myShader.setVec3("dirLight.ambient",  0.025f,0.025f,0.025f);
+        myShader.setVec3("dirLight.ambient",  0.05f,0.05f,0.05f);
         myShader.setVec3("dirLight.diffuse", 0.05f,0.05f,0.05f); // darken diffuse light a bit
         myShader.setVec3("dirLight.specular", 1.0f, 1.0f, 1.0f);
 
-        glm::mat4 view = myCamera.GetViewMatrix(); // view matrix
         glm::mat4 projection = glm::perspective(glm::radians(Globals::FOV),
             static_cast<float>(Globals::SCREEN_WIDTH) / static_cast<float>(Globals::SCREEN_HEIGHT),0.1f,100.0f); // determines the perspective
+        glm::mat4 view = myCamera.GetViewMatrix(); // view matrix
 
-        myShader.setMat4("projection",projection);
-        myShader.setMat4("view",view);
+        ubo.updateUniform(0,sizeof(glm::mat4),projection);
+        ubo.updateUniform(sizeof(glm::mat4),sizeof(glm::mat4),view);
 
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));	// it's a bit too big for our scene, so scale it down
+        auto model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, -20.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(2.3f, 2.3f, 2.3f));	// it's a bit too big for our scene, so scale it down
 
         myShader.setMat4("transform",model);
-
-
-        //glFrontFace(GL_CW);
-        // auto t = static_cast<float>(glfwGetTime());
-        // for (int i{0};i < 30;++i)
-        // {
-        //
-        //     model = glm::translate(model, glm::vec3(0.0f, i/2, 0.0f)); // translate it down so it's at the center of the scene
-        //     model = glm::rotate(model, glm::radians(static_cast<float>(glfwGetTime()) * 2.0f),glm::vec3(t,t,t));
-        //
-        //     myShader.setMat4("transform",model);
-        //     myModel.Draw(myShader);
-        // }
-        glDisable(GL_CULL_FACE);
         myModel.Draw(myShader);
 
-        glBindVertexArray(planeVAO);
-        //glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,floorTexture);
-        model = glm::mat4(1.0f);
-        //model = glm::translate(model,glm::vec3(0.0f,0.0f,0.0f));
-        myShader.setMat4("transform",model);
-        glDrawArrays(GL_TRIANGLES,0,6);
+        // normalShader.use(); //drawing normals
+        // normalShader.setMat4("projection",projection);
+        // normalShader.setMat4("view",view);
+        // normalShader.setMat4("model",model);
+        // myModel.Draw(normalShader);
 
         lightShader.use();
-        lightShader.setMat4("projection",projection);
-        lightShader.setMat4("view",view);
-        for (glm::vec3& light : movingLight) {
+        lightShader.setInt("skybox",0);
+        lightShader.setVec3("cameraPos",myCamera.Position);
 
+        for (glm::vec3& light : movingLight) {
             glm::mat4 lightModel = glm::mat4(1.0f);
-            lightModel = glm::translate(lightModel,glm::vec3(light.x,0.0f,light.z));
-            lightModel = glm::scale(lightModel,glm::vec3(0.4f));
+            lightModel = glm::translate(lightModel,glm::vec3(std::sin(light.x),0.0f,light.z));
+            lightModel = glm::scale(lightModel,glm::vec3(1.4f));
 
             lightShader.setMat4("transform",lightModel);
 
-            glBindVertexArray(lightVAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glBindVertexArray(lightBuffer.getVAO());
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 36,100);
         }
-
-        //glFrontFace(GL_CW);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
         model = glm::translate(model,glm::vec3(0.0f,5.0f,0.0f));
         model = glm::scale(model,glm::vec3(2.0f,2.0f,2.0f));
         lightShader.setMat4("transform",model);
 
-        glBindVertexArray(lightVAO);
+        glBindVertexArray(lightBuffer.getVAO());
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,containerTexture);
         glDrawArrays(GL_TRIANGLES,0,36);
 
-        glDisable(GL_CULL_FACE);
+        glBindVertexArray(planeBuffer.getVAO());
+        glBindTexture(GL_TEXTURE_2D,floorTexture);
+        model = glm::mat4(1.0f);
+        lightShader.setMat4("transform",model);
+        glDrawArrays(GL_TRIANGLES,0,6);
 
+        skyboxShader.use();
+        view = glm::mat4(glm::mat3(view));
+
+        skyboxShader.setMat4("view",view);
+        glDepthMask(GL_FALSE);
+        glBindVertexArray(cubeMapBuffer.getVAO());
+        glBindTexture(GL_TEXTURE_CUBE_MAP,cubemapTexture);
+        glDrawArrays(GL_TRIANGLES,0,36);
+        glDepthMask(GL_TRUE);
 
         stencilShader.use();
-        glBindVertexArray(grassVAO);
+        glBindVertexArray(grassBuffer.getVAO());
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D,grassTexture);
 
-        stencilShader.setMat4("projection",projection);
-        stencilShader.setMat4("view",view);
-
-
         std::map<float,glm::vec3> sortedWindows;
 
-        for (glm::vec3& pos : vegetation) {
+        for (glm::vec3& pos : TemporaryVertices::vegetation) {
             float distance = glm::length(myCamera.Position - pos);
             sortedWindows[distance] = pos;
         }
-
         for(auto it = sortedWindows.rbegin(); it != sortedWindows.rend(); ++it)
         {
             model = glm::mat4(1.0f);
@@ -456,19 +264,41 @@ int main() {
             stencilShader.setMat4("transform", model);
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
+        //passing the anti-aliased scene to the framebuffer
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, sampleFrameBuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+        glBlitFramebuffer(0, 0, Globals::SCREEN_WIDTH, Globals::SCREEN_HEIGHT, 0, 0,
+            Globals::SCREEN_WIDTH, Globals::SCREEN_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
+        glBindFramebuffer(GL_FRAMEBUFFER,0); // default framebuffer
+        glDisable(GL_DEPTH_TEST);
 
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        frameBufferShader.use();
+        glBindVertexArray(quadBuffer.getVAO());
+        glBindTexture(GL_TEXTURE_2D,textureFramebuffer);
+        glDrawArrays(GL_TRIANGLES,0,6);
 
         glfwSwapBuffers(window); // double buffers(front and back) used simultaneously to make whatever is on screen appear smooth
         glfwPollEvents(); // this calls the callback functions,takes input,updates the window;
     }
-    glDeleteVertexArrays(1,&planeVAO);
-    glDeleteVertexArrays(1,&lightVAO);
-
-    glDeleteBuffers(1,&lightVBO);
-    glDeleteBuffers(1,&planeVBO);
     myShader.end();
     lightShader.end();
+    stencilShader.end();
+    frameBufferShader.end();
+    skyboxShader.end();
+    normalShader.end();
+
+    ubo.~UBO();
+    myFrameBuffer.~Framebuffer();
+    msBuffer.~Framebuffer();
+    lightBuffer.~ArrayBuffer();
+    planeBuffer.~ArrayBuffer();
+    grassBuffer.~ArrayBuffer();
+    quadBuffer.~ArrayBuffer();
+    cubeMapBuffer.~ArrayBuffer();
 
     glfwTerminate(); // end the window
 
@@ -479,53 +309,8 @@ static void framebuffer_size_callback(GLFWwindow* window [[maybe_unused]],int wi
 {
     glViewport(0, 0, width, height);
 }
-
-static void processInput(GLFWwindow *window) // defines which keys,when pressed,perform which functions;escape closes the window
-{
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window,GLFW_KEY_Z) == GLFW_PRESS)
-    {
-        Globals::FOV -= 0.3f;
-        if (Globals::FOV < 10.0f)
-            Globals::FOV = 10.0f;
-    }
-    if (glfwGetKey(window,GLFW_KEY_X) == GLFW_PRESS)
-    {
-        Globals::FOV += 0.3f;
-        if (Globals::FOV > 60.0f)
-            Globals::FOV = 60.0f;
-    }
-
-    if (glfwGetKey(window,GLFW_KEY_F) == GLFW_PRESS && !Globals::closeFlash) {
-        Globals::hasFlashed = !Globals::hasFlashed;
-        Globals::closeFlash = true;
-    } else if (glfwGetKey(window,GLFW_KEY_F) == GLFW_RELEASE) {Globals::closeFlash  = false;}
-}
-
-static void movementInput(GLFWwindow *window,Camera& myCamera,float deltaTime)
-{
-    if (glfwGetKey(window,GLFW_KEY_W) == GLFW_PRESS)
-    {
-        myCamera.ProcessKeyboard(FORWARD,deltaTime);
-        if (glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)  // n0$$
-            myCamera.ProcessKeyboard(ULTRASPEED,deltaTime);
-
-    }
-    if (glfwGetKey(window,GLFW_KEY_S) == GLFW_PRESS)
-        myCamera.ProcessKeyboard(BACKWARD,deltaTime);
-
-    if (glfwGetKey(window,GLFW_KEY_A) == GLFW_PRESS)
-        myCamera.ProcessKeyboard(LEFT,deltaTime);
-
-    if (glfwGetKey(window,GLFW_KEY_D) == GLFW_PRESS)
-        myCamera.ProcessKeyboard(RIGHT,deltaTime);
-}
-
 static void mouse_callback(GLFWwindow* window,double xpos, double ypos)
 {
-
     auto* myCamera = static_cast<Camera*>(glfwGetWindowUserPointer(window)); // I did this because I couldn't pass by reference
     if (Globals::firstLook) // sets the xpos and ypos to the middle of the screen
     {
@@ -538,6 +323,18 @@ static void mouse_callback(GLFWwindow* window,double xpos, double ypos)
     Globals::lastX = static_cast<float>(xpos);
     Globals::lastY = static_cast<float>(ypos);
     myCamera -> ProcessMouseMovement(xoffset,yoffset);
+}
+
+void printFPS(double& zeroFrame,int& nFrames)
+{
+    auto currentFrame =glfwGetTime();
+
+    if (currentFrame - zeroFrame > 0.2f) // FPS calculator
+    {
+        std::cout << "FPS: " << nFrames * 5.0 << '\n';
+        nFrames = 0.0;
+        zeroFrame = currentFrame;
+    }
 }
 
 

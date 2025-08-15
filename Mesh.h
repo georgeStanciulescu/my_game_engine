@@ -45,7 +45,7 @@ public:
         setupMesh();
     }
 
-    void Draw(const Shader& shader) const
+    void Draw(const Shader& shader,const int numberOfInstances = 0) const
     {
         unsigned int diffuseNr{1};
         unsigned int specularNr{1};
@@ -78,7 +78,10 @@ public:
 
         // draw mesh
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, nullptr);
+        if (!numberOfInstances)
+            glDrawElements(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, nullptr);
+        else
+            glDrawElementsInstanced(GL_TRIANGLES,static_cast<int>(indices.size()),GL_UNSIGNED_INT,nullptr,numberOfInstances);
         glBindVertexArray(0);
     }
 

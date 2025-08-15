@@ -14,7 +14,14 @@ add_executable(MYOPENPROJECT main.cpp glad.c
         stb_image.cpp
         Camera.h
         Mesh.h
-        Model.h)
+        Model.h
+        Framebuffer.h
+        Globals.h
+        UBO.h
+        VertexInformation.h
+        ArrayBuffer.h
+        Input.h
+)
 
 target_link_libraries(MYOPENPROJECT glfw3 assimp GL X11 pthread Xrandr Xi dl)
 
