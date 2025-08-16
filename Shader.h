@@ -76,7 +76,7 @@ public:
         glDeleteShader(vertex);
         glDeleteShader(fragment);
     }
-    //for three shaders(I might move it into the the other constructor)
+    //for three shaders(I might move it into the other constructor)
     Shader(const char* vertexPath,const char* geometryPath, const char* fragmentPath)
     {
         // 1. retrieve the vertex/fragment source code from filePath

@@ -6,6 +6,8 @@ namespace Globals
 {
     static constexpr unsigned int SCREEN_WIDTH{800};
     static constexpr unsigned int SCREEN_HEIGHT{600};
+    static constexpr unsigned int SHADOW_WIDTH{1024};
+    static constexpr unsigned int SHADOW_HEIGHT{1024};
 
     static constexpr int SAMPLE_NUMBER{4};
 
@@ -22,6 +24,11 @@ namespace Globals
 
     static bool blinnPhong{false};
     static bool hasChangedLight{false};
+
+    static bool gammaCorrected{false};
+    static bool hasActivatedGamma{false};
+
+    static bool shadowPass{false};
 
 }
 

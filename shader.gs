@@ -30,18 +30,24 @@ vec4 explode(vec4 position,vec3 normal)
 
 void main()
 {
-    //vec3 normal_gs = normalCalculator();
+    //vec3 normal_gs = normalCalculator();   // use for exploding mesh
+    //gl_Position = explode(gl_in[0].gl_Position,normal_gs);
+
     gl_Position = gl_in[0].gl_Position;
     TexCoord = tex_in[0].TexCoord;
     Normal = tex_in[0].ABNORMAL;
     FragPos = tex_in[0].FragPos;
     EmitVertex();
 
+    //gl_Position = explode(gl_in[1].gl_Position,normal_gs);
+
     gl_Position = gl_in[1].gl_Position;
     TexCoord = tex_in[1].TexCoord;
     Normal = tex_in[1].ABNORMAL;
     FragPos = tex_in[1].FragPos;
     EmitVertex();
+
+    //gl_Position = explode(gl_in[2].gl_Position,normal_gs);
 
     gl_Position = gl_in[2].gl_Position;
     TexCoord = tex_in[2].TexCoord;

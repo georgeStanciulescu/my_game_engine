@@ -4,7 +4,11 @@ out vec4 FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
-const float offset= 1.0/3000.0;
+uniform bool gammaCorrected;
+
+
+const float gamma = 2.2f;
+const float offset= 1.0/30000.0;
 void main()
 {
     vec2 offsets[9] = vec2[](
@@ -20,9 +24,9 @@ void main()
         );
 
         float kernel[9] = float[]( //gaussian blur
-            1.0/16.0, 2.0/16.0, 1.0/16.0,
-            2.0/16.0, 4.0/16.0, 2.0/16.0,
-            1.0/16.0, 2.0/16.0, 1.0/16.0
+            -1, -1, -1,
+            -1,  9, -1,
+            -1, -1, -1
         );
 
         vec3 sampleTex[9];
@@ -34,6 +38,14 @@ void main()
         for(int i = 0; i < 9; i++)
             col += sampleTex[i] * kernel[i];
 
+
         FragColor = vec4(col, 1.0);
+        if(gammaCorrected)
+            FragColor.rgb = pow(FragColor.rgb,vec3(1.0/gamma)); // gamma correction
         //FragColor = texture(screenTexture,TexCoords);
+
+//         //for depth testing purposes
+//         float depthValue = texture(screenTexture, TexCoords).r;
+//         // FragColor = vec4(vec3(LinearizeDepth(depthValue) / far_plane), 1.0); // perspective
+//         FragColor = vec4(vec3(depthValue), 1.0); // orthographic
 }

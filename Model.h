@@ -27,7 +27,7 @@ enum class TextureType
     opaque,
 };
 
-unsigned int TextureFromFile(const char *path, const std::string &directory ="",TextureType imageType = TextureType::opaque, bool gamma = false);
+unsigned int TextureFromFile(const char *path,const std::string &directory ="",TextureType imageType = TextureType::opaque, bool gamma = false);
 
 class Model
 {
@@ -38,7 +38,7 @@ public:
     std::string directory;
     bool gammaCorrection;
 
-    explicit Model(char const * path,bool gamma = false) : gammaCorrection(gamma)
+    explicit Model(char const * path,bool gamma = false) : gammaCorrection{gamma}
     {
         loadModel(path);
     }
@@ -177,7 +177,10 @@ private:
             if(!skip)
             {   // if texture hasn't been loaded already, load it
                 Mesh::Texture texture;
-                texture.id = TextureFromFile(str.C_Str()); // add directory as second argument if you place your maps somewhere else
+                if (typeName == "texture_diffuse" && gammaCorrection)
+                    texture.id = TextureFromFile(str.C_Str(),"",TextureType::opaque,true); // add directory as second argument if you place your maps somewhere else
+                else
+                    texture.id = TextureFromFile(str.C_Str()); // add directory as second argument if you place your maps somewhere else
                 texture.type = typeName;
                 texture.path = str.C_Str();
                 textures.push_back(texture);
@@ -191,7 +194,7 @@ private:
 public:
 
     static unsigned int TextureFromFile(const char *path,const std::string &directory = "",
-        const TextureType imageType = TextureType::opaque,[[maybe_unused]] bool gamma = false)
+        const TextureType imageType = TextureType::opaque,[[maybe_unused]] const bool gamma = false) // looks really bad,I'll have to change this
     {
         auto filename = std::string(path);
 
@@ -211,16 +214,30 @@ public:
             stbi_image_free(data);
             return textureID;
         }
-        GLenum format{0};
-        if (nrComponents == 1)
-            format = GL_RED;
+
+        GLenum internalFormat{};
+        GLenum format{};
+
+        if (nrComponents == 1) {internalFormat = GL_RED;}
         else if (nrComponents == 3)
-            format = GL_RGB;
+        {
+            if (gamma) {internalFormat = GL_SRGB;}
+            else {internalFormat = GL_RGB;}
+        }
+
         else if (nrComponents == 4)
-            format = GL_RGBA;
+        {
+            if (gamma) {internalFormat = GL_SRGB_ALPHA;}
+            else {internalFormat = GL_RGBA;}
+        }
+
+        if (internalFormat == GL_SRGB){format = GL_RGB;}
+        else if (internalFormat == GL_SRGB_ALPHA) {format = GL_RGBA;}
+        else{format = internalFormat;}
+
 
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, static_cast<int>(format), width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, static_cast<int>(internalFormat), width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         std::cout << "TEXTURE: " << path << "     TYPE: ";
@@ -263,7 +280,7 @@ public:
                 return 0;
             }
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                             0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+                             0, GL_SRGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
                 );
             stbi_image_free(data);
         }

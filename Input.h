@@ -33,6 +33,11 @@ namespace Input
             Globals::blinnPhong = !Globals::blinnPhong;
             Globals::hasChangedLight = true;
         }else if (glfwGetKey(window,GLFW_KEY_B) == GLFW_RELEASE) {Globals::hasChangedLight = false;}
+
+        if (glfwGetKey(window,GLFW_KEY_V) == GLFW_PRESS && !Globals::hasActivatedGamma){   //blinn-phong model changing at run-time
+            Globals::gammaCorrected = !Globals::gammaCorrected;
+            Globals::hasActivatedGamma = true;
+        }else if (glfwGetKey(window,GLFW_KEY_V) == GLFW_RELEASE) {Globals::hasActivatedGamma = false;}
     }
 
     inline void movementInput(GLFWwindow *window,Camera& myCamera,const float deltaTime)
